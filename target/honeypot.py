@@ -38,6 +38,7 @@ class Honeypot:
                 "data": data,
             }
             self.log_path.parent.mkdir(parents=True, exist_ok=True)
+      ######  [6] - WRITE AUDIT LOG (honeypot.jsonl)     ########    
             with self.log_path.open("a") as f:
                 f.write(json.dumps(entry) + "\n")
         except Exception as exc:

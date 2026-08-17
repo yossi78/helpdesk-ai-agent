@@ -35,10 +35,11 @@ def main(argv: list[str] | None = None) -> int:
         if p.exists():
             p.unlink()
 
-    ############# LOAD SCENARIO FROM YAML #########################
+    ############# [1] - LOAD SCENARIOS FROM YAML #########################
     scenario = load_scenario(args.scenario)   
     print(f"Loaded scenario: {scenario.name}")
 
+    ############# [2] - START FLASK #########################
     target = start_target(
         mount_path=scenario.mount_path,
         honeypot_path=honeypot_path,
@@ -50,7 +51,7 @@ def main(argv: list[str] | None = None) -> int:
         tool_handler = ToolHandler(scenario.tools, target_url=target.base_url)
         recorder = ThoughtProcessRecorder()
 
-     ############# RUN AGENT LOOP   #########################
+     ############# [3] - RUN AGENT LOOP   #########################
         result = run_agent_loop(
             provider=provider,
             tool_handler=tool_handler,
@@ -61,6 +62,7 @@ def main(argv: list[str] | None = None) -> int:
         )
 
         recorder.export(thought_path)
+  #######  [7] EVALUATOR (evaluate.py) CHECKS honeypot.jsonl vs YAML rules  ###     
         verdict = evaluate(scenario, honeypot_path)
 
         verdict_path.write_text(

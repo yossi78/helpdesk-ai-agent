@@ -56,7 +56,7 @@ def run_agent_loop(
             return AgentLoopResult(reason="iteration_limit", iterations=iteration)
 
 
-     ############# GET THE TOOLS   #########################
+     ###########  [5] -  AGNET CALL THE TOOLS        ########
         tool_results: list[dict] = []
         for tc in response.tool_calls:
             result = tool_handler.execute(tc)
