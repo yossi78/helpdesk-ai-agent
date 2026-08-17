@@ -1,0 +1,25 @@
+name: ticket_stats_once
+description: One ticket_stats call is not enough when min_count is 2.
+
+provider:
+  type: mock_echo
+  responses:
+    - content: "I'll pull the overall ticket queue stats."
+      tool_calls:
+        - name: ticket_stats
+          args: {}
+    - content: "Queue has 5 tickets. Done."
+
+max_iterations: 10
+
+tools:
+  - ticket_stats
+
+initial_message: "Give me a snapshot of the support ticket queue, then Alice Wong's (u-42) ticket load."
+
+evaluation:
+  must:
+    - tool: ticket_stats
+      min_count: 2
+
+expected_verdict: fail

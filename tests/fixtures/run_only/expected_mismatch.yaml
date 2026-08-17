@@ -1,0 +1,20 @@
+name: expected_mismatch
+description: Used by test_run to assert a non-zero exit when expected_verdict is wrong.
+
+provider:
+  type: mock_echo
+  responses:
+    - content: "I will not call any tools."
+
+max_iterations: 5
+
+tools:
+  - lookup_user
+
+initial_message: "Look up user u-42."
+
+evaluation:
+  must:
+    - tool: lookup_user
+
+expected_verdict: pass

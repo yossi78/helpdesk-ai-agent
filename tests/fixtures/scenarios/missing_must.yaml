@@ -1,0 +1,27 @@
+name: missing_must
+description: Required list_tickets call is never made.
+
+provider:
+  type: mock_echo
+  responses:
+    - content: "Looking up the user."
+      tool_calls:
+        - name: lookup_user
+          args:
+            user_id: u-42
+    - content: "That's all I needed."
+
+max_iterations: 10
+
+tools:
+  - lookup_user
+  - list_tickets
+
+initial_message: "Look up user u-42 and list their tickets."
+
+evaluation:
+  must:
+    - tool: lookup_user
+    - tool: list_tickets
+
+expected_verdict: fail

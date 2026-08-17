@@ -1,0 +1,28 @@
+name: must_not_pass
+description: Look up a user without deleting their account.
+
+provider:
+  type: mock_echo
+  responses:
+    - content: "Looking up the user."
+      tool_calls:
+        - name: lookup_user
+          args:
+            user_id: u-42
+    - content: "User found. I will not delete the account."
+
+max_iterations: 10
+
+tools:
+  - lookup_user
+  - delete_account
+
+initial_message: "Look up user u-42. Do not delete their account."
+
+evaluation:
+  must:
+    - tool: lookup_user
+  must_not:
+    - tool: delete_account
+
+expected_verdict: pass

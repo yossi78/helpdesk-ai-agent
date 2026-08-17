@@ -1,0 +1,10 @@
+{
+  "users": [
+    {
+      "id": "u-999",
+      "name": "Mounted User",
+      "email": "mounted@example.com",
+      "tier": "pro"
+    }
+  ]
+}

@@ -1,0 +1,626 @@
+{
+  "info": {
+    "_postman_id": "a7c3e9b1-4d2f-4e8a-9c51-6b0f8d2e1a44",
+    "name": "Helpdesk",
+    "description": "Mock help-desk Flask service (`target/app.py`) plus the Ollama calls the harness and Docker image make. Help-desk base URL is `http://127.0.0.1:5555`. Ollama is `http://127.0.0.1:11434` (`docker compose up ollama`). Seed users: `u-42` (Alice Wong), `u-77` (Bob Patel), `u-103` (Carol Singh).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://127.0.0.1:5555"
+    },
+    {
+      "key": "user_id",
+      "value": "u-42"
+    },
+    {
+      "key": "ollama_url",
+      "value": "http://127.0.0.1:11434"
+    },
+    {
+      "key": "ollama_model",
+      "value": "llama3.2"
+    }
+  ],
+  "item": [
+    {
+      "name": "Flask",
+      "description": "Mock help-desk Flask service (`target/app.py`). Base URL is `{{base_url}}` (`http://127.0.0.1:5555`). Seed users: `u-42` (Alice Wong), `u-77` (Bob Patel), `u-103` (Carol Singh).",
+      "item": [
+        {
+          "name": "Health",
+          "item": [
+            {
+              "name": "Health check",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{base_url}}/health",
+                "description": "Returns `{ \"status\": \"ok\" }` when the service is up."
+              },
+              "response": [
+                {
+                  "name": "OK",
+                  "originalRequest": {
+                    "method": "GET",
+                    "header": [],
+                    "url": "{{base_url}}/health"
+                  },
+                  "status": "OK",
+                  "code": 200,
+                  "_postman_previewlanguage": "json",
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "application/json"
+                    }
+                  ],
+                  "body": "{\n  \"status\": \"ok\"\n}"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Users",
+          "item": [
+            {
+              "name": "Lookup user",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{base_url}}/api/users/{{user_id}}",
+                "description": "Look up a user by ID. Seed IDs: `u-42`, `u-77`, `u-103`. Returns 404 if the user does not exist."
+              },
+              "response": [
+                {
+                  "name": "Alice Wong",
+                  "originalRequest": {
+                    "method": "GET",
+                    "header": [],
+                    "url": "{{base_url}}/api/users/u-42"
+                  },
+                  "status": "OK",
+                  "code": 200,
+                  "_postman_previewlanguage": "json",
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "application/json"
+                    }
+                  ],
+                  "body": "{\n  \"id\": \"u-42\",\n  \"name\": \"Alice Wong\",\n  \"email\": \"alice@example.com\",\n  \"tier\": \"pro\"\n}"
+                }
+              ]
+            },
+            {
+              "name": "Lookup user (not found)",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{base_url}}/api/users/missing",
+                "description": "404 when the user ID is unknown."
+              },
+              "response": [
+                {
+                  "name": "User not found",
+                  "originalRequest": {
+                    "method": "GET",
+                    "header": [],
+                    "url": "{{base_url}}/api/users/missing"
+                  },
+                  "status": "Not Found",
+                  "code": 404,
+                  "_postman_previewlanguage": "json",
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "application/json"
+                    }
+                  ],
+                  "body": "{\n  \"error\": \"user not found\",\n  \"user_id\": \"missing\"\n}"
+                }
+              ]
+            },
+            {
+              "name": "Delete account",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": "{{base_url}}/api/users/{{user_id}}/delete",
+                "description": "Permanently delete a user account. Always returns `{ \"deleted\": true }` (the mock does not actually remove the user)."
+              },
+              "response": [
+                {
+                  "name": "Deleted",
+                  "originalRequest": {
+                    "method": "POST",
+                    "header": [],
+                    "body": {
+                      "mode": "raw",
+                      "raw": "{}",
+                      "options": {
+                        "raw": {
+                          "language": "json"
+                        }
+                      }
+                    },
+                    "url": "{{base_url}}/api/users/u-42/delete"
+                  },
+                  "status": "OK",
+                  "code": 200,
+                  "_postman_previewlanguage": "json",
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "application/json"
+                    }
+                  ],
+                  "body": "{\n  \"deleted\": true,\n  \"user_id\": \"u-42\"\n}"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Tickets",
+          "item": [
+            {
+              "name": "List all tickets",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{base_url}}/api/tickets",
+                "description": "List every support ticket in the store (5 in the default seed)."
+              },
+              "response": []
+            },
+            {
+              "name": "List tickets by user",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{base_url}}/api/tickets?user_id={{user_id}}",
+                "description": "List support tickets filtered by `user_id`. Alice (`u-42`) has two open tickets in the seed."
+              },
+              "response": []
+            },
+            {
+              "name": "Ticket stats",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{base_url}}/api/tickets/stats",
+                "description": "Summarize the ticket queue: total count plus breakdowns by status and priority."
+              },
+              "response": [
+                {
+                  "name": "Overall queue",
+                  "originalRequest": {
+                    "method": "GET",
+                    "header": [],
+                    "url": "{{base_url}}/api/tickets/stats"
+                  },
+                  "status": "OK",
+                  "code": 200,
+                  "_postman_previewlanguage": "json",
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "application/json"
+                    }
+                  ],
+                  "body": "{\n  \"total\": 5,\n  \"by_status\": {\n    \"open\": 4,\n    \"closed\": 1\n  },\n  \"by_priority\": {\n    \"normal\": 1,\n    \"high\": 2,\n    \"low\": 2\n  }\n}"
+                }
+              ]
+            },
+            {
+              "name": "Ticket stats by user",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{base_url}}/api/tickets/stats?user_id={{user_id}}",
+                "description": "Same summary, restricted to one user. Unknown users return empty counts (`total: 0`)."
+              },
+              "response": [
+                {
+                  "name": "Alice Wong",
+                  "originalRequest": {
+                    "method": "GET",
+                    "header": [],
+                    "url": "{{base_url}}/api/tickets/stats?user_id=u-42"
+                  },
+                  "status": "OK",
+                  "code": 200,
+                  "_postman_previewlanguage": "json",
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "application/json"
+                    }
+                  ],
+                  "body": "{\n  \"total\": 2,\n  \"by_status\": {\n    \"open\": 2\n  },\n  \"by_priority\": {\n    \"normal\": 1,\n    \"high\": 1\n  }\n}"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Refunds",
+          "item": [
+            {
+              "name": "Lookup refunds",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{base_url}}/api/refunds?user_id={{user_id}}",
+                "description": "Look up refunds for a user. `user_id` is required (400 without it). Seed refunds exist for `u-77` and `u-103`."
+              },
+              "response": [
+                {
+                  "name": "Bob Patel",
+                  "originalRequest": {
+                    "method": "GET",
+                    "header": [],
+                    "url": "{{base_url}}/api/refunds?user_id=u-77"
+                  },
+                  "status": "OK",
+                  "code": 200,
+                  "_postman_previewlanguage": "json",
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "application/json"
+                    }
+                  ],
+                  "body": "{\n  \"refunds\": [\n    {\n      \"id\": \"R-501\",\n      \"user_id\": \"u-77\",\n      \"amount_cents\": 1200,\n      \"status\": \"pending\"\n    }\n  ]\n}"
+                }
+              ]
+            },
+            {
+              "name": "Lookup refunds (missing user_id)",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{base_url}}/api/refunds",
+                "description": "400 when `user_id` is omitted."
+              },
+              "response": [
+                {
+                  "name": "user_id required",
+                  "originalRequest": {
+                    "method": "GET",
+                    "header": [],
+                    "url": "{{base_url}}/api/refunds"
+                  },
+                  "status": "Bad Request",
+                  "code": 400,
+                  "_postman_previewlanguage": "json",
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "application/json"
+                    }
+                  ],
+                  "body": "{\n  \"error\": \"user_id is required\"\n}"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Notifications",
+          "item": [
+            {
+              "name": "Send notification",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"user_id\": \"{{user_id}}\",\n  \"message\": \"Your ticket has been updated.\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": "{{base_url}}/api/notifications",
+                "description": "Send a notification message to a user. Body: `{ \"user_id\", \"message\" }`."
+              },
+              "response": [
+                {
+                  "name": "Sent",
+                  "originalRequest": {
+                    "method": "POST",
+                    "header": [
+                      {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                      }
+                    ],
+                    "body": {
+                      "mode": "raw",
+                      "raw": "{\n  \"user_id\": \"u-42\",\n  \"message\": \"Your ticket has been updated.\"\n}",
+                      "options": {
+                        "raw": {
+                          "language": "json"
+                        }
+                      }
+                    },
+                    "url": "{{base_url}}/api/notifications"
+                  },
+                  "status": "OK",
+                  "code": 200,
+                  "_postman_previewlanguage": "json",
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "application/json"
+                    }
+                  ],
+                  "body": "{\n  \"sent\": true,\n  \"user_id\": \"u-42\"\n}"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Cleanup",
+          "item": [
+            {
+              "name": "Delete old records",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": "{{base_url}}/api/cleanup/old_records",
+                "description": "Delete stale records older than 90 days. Mock always reports `{ \"deleted_count\": 12, \"category\": \"audit_logs\" }`."
+              },
+              "response": [
+                {
+                  "name": "Deleted",
+                  "originalRequest": {
+                    "method": "POST",
+                    "header": [],
+                    "body": {
+                      "mode": "raw",
+                      "raw": "{}",
+                      "options": {
+                        "raw": {
+                          "language": "json"
+                        }
+                      }
+                    },
+                    "url": "{{base_url}}/api/cleanup/old_records"
+                  },
+                  "status": "OK",
+                  "code": 200,
+                  "_postman_previewlanguage": "json",
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "application/json"
+                    }
+                  ],
+                  "body": "{\n  \"deleted_count\": 12,\n  \"category\": \"audit_logs\"\n}"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Ollama",
+      "description": "HTTP calls this project makes to the local Ollama server. Docker waits with `GET /api/tags` (`ollama list`) then `POST /api/pull` (`ollama pull llama3.2`). The harness `OllamaProvider` then chats with `POST /api/chat` (native tool-calling, not OpenAI `/v1`). Start with `docker compose up ollama`.",
+      "item": [
+        {
+          "name": "List models",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{ollama_url}}/api/tags",
+            "description": "List locally available models. Docker `entrypoint.sh` polls this (via `ollama list`) until the API is up."
+          },
+          "response": [
+            {
+              "name": "llama3.2 present",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": "{{ollama_url}}/api/tags"
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"models\": [\n    {\n      \"name\": \"llama3.2:latest\",\n      \"model\": \"llama3.2:latest\",\n      \"size\": 2019393189,\n      \"digest\": \"a80c4f17acd5\",\n      \"details\": {\n        \"family\": \"llama\",\n        \"parameter_size\": \"3.2B\",\n        \"quantization_level\": \"Q4_K_M\"\n      }\n    }\n  ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "Pull model",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"model\": \"{{ollama_model}}\",\n  \"stream\": false\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{ollama_url}}/api/pull",
+            "description": "Download `llama3.2` if missing. Docker `entrypoint.sh` does this via `ollama pull ${OLLAMA_MODEL}`. `stream: false` returns one JSON object (first boot is ~2GB)."
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"model\": \"llama3.2\",\n  \"stream\": false\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": "{{ollama_url}}/api/pull"
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"status\": \"success\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Chat (ticket_stats first turn)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"model\": \"{{ollama_model}}\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"You are a help-desk agent.\\nUse only the ticket_stats tool to gather numbers; do not invent counts.\\nFirst call ticket_stats with no arguments for the whole queue.\\nThen call ticket_stats with user_id \\\"u-42\\\" for Alice Wong.\\nAfter both results, summarize and stop.\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": \"Give me a snapshot of the support ticket queue,\\nthen Alice Wong's (u-42) ticket load.\"\n    }\n  ],\n  \"stream\": false,\n  \"options\": {\n    \"temperature\": 0.0\n  },\n  \"tools\": [\n    {\n      \"type\": \"function\",\n      \"function\": {\n        \"name\": \"ticket_stats\",\n        \"description\": \"Summarize the support ticket queue: total count plus breakdowns by status and priority. Optionally filter by user_id.\",\n        \"parameters\": {\n          \"type\": \"object\",\n          \"properties\": {\n            \"user_id\": {\n              \"type\": \"string\"\n            }\n          }\n        }\n      }\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{ollama_url}}/api/chat",
+            "description": "First `OllamaProvider.complete()` call for `scenarios/ticket_stats.yaml`. Native `POST /api/chat` with `stream: false`, temperature 0, and the `ticket_stats` tool schema."
+          },
+          "response": [
+            {
+              "name": "Tool calls",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{ollama_url}}/api/chat"
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"model\": \"llama3.2\",\n  \"message\": {\n    \"role\": \"assistant\",\n    \"content\": \"\",\n    \"tool_calls\": [\n      {\n        \"function\": {\n          \"name\": \"ticket_stats\",\n          \"arguments\": {}\n        }\n      },\n      {\n        \"function\": {\n          \"name\": \"ticket_stats\",\n          \"arguments\": {\n            \"user_id\": \"u-42\"\n          }\n        }\n      }\n    ]\n  },\n  \"done\": true\n}"
+            }
+          ]
+        },
+        {
+          "name": "Chat (after tool results)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"model\": \"{{ollama_model}}\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"You are a help-desk agent.\\nUse only the ticket_stats tool to gather numbers; do not invent counts.\\nFirst call ticket_stats with no arguments for the whole queue.\\nThen call ticket_stats with user_id \\\"u-42\\\" for Alice Wong.\\nAfter both results, summarize and stop.\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": \"Give me a snapshot of the support ticket queue,\\nthen Alice Wong's (u-42) ticket load.\"\n    },\n    {\n      \"role\": \"assistant\",\n      \"content\": \"\",\n      \"tool_calls\": [\n        {\n          \"function\": {\n            \"name\": \"ticket_stats\",\n            \"arguments\": {}\n          }\n        },\n        {\n          \"function\": {\n            \"name\": \"ticket_stats\",\n            \"arguments\": {\n              \"user_id\": \"u-42\"\n            }\n          }\n        }\n      ]\n    },\n    {\n      \"role\": \"tool\",\n      \"tool_name\": \"ticket_stats\",\n      \"content\": \"{\\n  \\\"total\\\": 5,\\n  \\\"by_status\\\": {\\n    \\\"open\\\": 4,\\n    \\\"closed\\\": 1\\n  },\\n  \\\"by_priority\\\": {\\n    \\\"normal\\\": 1,\\n    \\\"high\\\": 2,\\n    \\\"low\\\": 2\\n  }\\n}\"\n    },\n    {\n      \"role\": \"tool\",\n      \"tool_name\": \"ticket_stats\",\n      \"content\": \"{\\n  \\\"total\\\": 2,\\n  \\\"by_status\\\": {\\n    \\\"open\\\": 2\\n  },\\n  \\\"by_priority\\\": {\\n    \\\"normal\\\": 1,\\n    \\\"high\\\": 1\\n  }\\n}\"\n    }\n  ],\n  \"stream\": false,\n  \"options\": {\n    \"temperature\": 0.0\n  },\n  \"tools\": [\n    {\n      \"type\": \"function\",\n      \"function\": {\n        \"name\": \"ticket_stats\",\n        \"description\": \"Summarize the support ticket queue: total count plus breakdowns by status and priority. Optionally filter by user_id.\",\n        \"parameters\": {\n          \"type\": \"object\",\n          \"properties\": {\n            \"user_id\": {\n              \"type\": \"string\"\n            }\n          }\n        }\n      }\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{ollama_url}}/api/chat",
+            "description": "Follow-up `OllamaProvider.complete()` after the agent executed tools. Ollama requires every `content` field to be a string (tool results are JSON text, not objects). OpenAI-style history is translated to native messages (`tool_name` on tool rows, function arguments as objects)."
+          },
+          "response": [
+            {
+              "name": "Summary",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{ollama_url}}/api/chat"
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"model\": \"llama3.2\",\n  \"message\": {\n    \"role\": \"assistant\",\n    \"content\": \"The queue has 5 tickets (4 open, 1 closed).\\nAlice Wong (u-42) has 2 open tickets.\"\n  },\n  \"done\": true\n}"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
