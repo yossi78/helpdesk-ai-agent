@@ -62,9 +62,11 @@ def main(argv: list[str] | None = None) -> int:
         )
 
         recorder.export(thought_path)
-  #######  [7] EVALUATOR (evaluate.py) CHECKS honeypot.jsonl vs YAML rules  ###     
+    #  [7] EVALUATOR (evaluate.py) CHECKS honeypot.jsonl vs YAML rules  ###     
         verdict = evaluate(scenario, honeypot_path)
 
+    # [8] - WRITE SCORE OF RUN (verdict + rule results, plus termination_reason and iterations)
+    #  into verdict.json ###### ######
         verdict_path.write_text(
             json.dumps(
                 {
