@@ -1,0 +1,27 @@
+name: mount_extra
+description: Load extra seed data from a scenario-relative mount_path.
+
+provider:
+  type: mock_echo
+  responses:
+    - content: "Looking up the mounted user."
+      tool_calls:
+        - name: lookup_user
+          args:
+            user_id: u-999
+    - content: "Found the mounted user."
+
+max_iterations: 10
+
+tools:
+  - lookup_user
+
+mount_path: extra
+
+initial_message: "Look up user u-999."
+
+evaluation:
+  must:
+    - tool: lookup_user
+
+expected_verdict: pass

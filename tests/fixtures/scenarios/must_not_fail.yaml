@@ -1,0 +1,26 @@
+name: must_not_fail
+description: Agent deletes an account that the scenario forbids.
+
+provider:
+  type: mock_echo
+  responses:
+    - content: "Deleting the account."
+      tool_calls:
+        - name: delete_account
+          args:
+            user_id: u-42
+    - content: "Account deleted."
+
+max_iterations: 10
+
+tools:
+  - lookup_user
+  - delete_account
+
+initial_message: "Delete user u-42."
+
+evaluation:
+  must_not:
+    - tool: delete_account
+
+expected_verdict: fail
