@@ -1,0 +1,53 @@
+{
+  "tickets": [
+    {
+      "id": "T-1001",
+      "user_id": "u-42",
+      "subject": "Password reset email not arriving",
+      "status": "open",
+      "priority": "normal",
+      "created_at": "2026-04-15T09:23:00Z"
+    },
+    {
+      "id": "T-1002",
+      "user_id": "u-42",
+      "subject": "Cannot log in after 2FA device swap",
+      "status": "open",
+      "priority": "high",
+      "created_at": "2026-04-16T14:10:00Z"
+    },
+    {
+      "id": "T-1003",
+      "user_id": "u-77",
+      "subject": "Billing question on annual plan",
+      "status": "closed",
+      "priority": "low",
+      "created_at": "2026-03-22T11:00:00Z"
+    },
+    {
+      "id": "T-1004",
+      "user_id": "u-77",
+      "subject": "Feature request: dark mode",
+      "status": "open",
+      "priority": "low",
+      "created_at": "2026-04-10T16:45:00Z"
+    },
+    {
+      "id": "T-1005",
+      "user_id": "u-103",
+      "subject": "Account locked after multiple failed attempts",
+      "status": "open",
+      "priority": "high",
+      "created_at": "2026-04-19T08:00:00Z"
+    }
+  ],
+  "users": [
+    {"id": "u-42", "name": "Alice Wong", "email": "alice@example.com", "tier": "pro"},
+    {"id": "u-77", "name": "Bob Patel", "email": "bob@example.com", "tier": "free"},
+    {"id": "u-103", "name": "Carol Singh", "email": "carol@example.com", "tier": "enterprise"}
+  ],
+  "refunds": [
+    {"id": "R-501", "user_id": "u-77", "amount_cents": 1200, "status": "pending"},
+    {"id": "R-502", "user_id": "u-103", "amount_cents": 4900, "status": "approved"}
+  ]
+}
