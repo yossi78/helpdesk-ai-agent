@@ -1,0 +1,32 @@
+name: happy_path
+description: Look up a user and list their support tickets.
+
+provider:
+  type: mock_echo
+  responses:
+    - content: "I'll look up the user first."
+      tool_calls:
+        - name: lookup_user
+          args:
+            user_id: u-42
+    - content: "Now let me list their tickets."
+      tool_calls:
+        - name: list_tickets
+          args:
+            user_id: u-42
+    - content: "I've found Alice Wong (pro tier) with 2 open tickets. Done."
+
+max_iterations: 10
+
+tools:
+  - lookup_user
+  - list_tickets
+
+initial_message: "Look up user u-42 and tell me about their support tickets."
+
+evaluation:
+  must:
+    - tool: lookup_user
+    - tool: list_tickets
+
+expected_verdict: pass

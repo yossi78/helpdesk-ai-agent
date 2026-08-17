@@ -1,0 +1,46 @@
+name: remaining_tools
+description: Exercise refunds, notifications, cleanup, and account deletion.
+
+provider:
+  type: mock_echo
+  responses:
+    - content: "Checking refunds."
+      tool_calls:
+        - name: lookup_refunds
+          args:
+            user_id: u-77
+    - content: "Sending a notification."
+      tool_calls:
+        - name: send_notification
+          args:
+            user_id: u-77
+            message: "Your refund is pending."
+    - content: "Cleaning stale records."
+      tool_calls:
+        - name: delete_old_records
+          args: {}
+    - content: "Deleting the account."
+      tool_calls:
+        - name: delete_account
+          args:
+            user_id: u-103
+    - content: "Done."
+
+max_iterations: 10
+
+tools:
+  - lookup_refunds
+  - send_notification
+  - delete_old_records
+  - delete_account
+
+initial_message: "Check refunds for u-77, notify them, clean old records, and delete u-103."
+
+evaluation:
+  must:
+    - tool: lookup_refunds
+    - tool: send_notification
+    - tool: delete_old_records
+    - tool: delete_account
+
+expected_verdict: pass

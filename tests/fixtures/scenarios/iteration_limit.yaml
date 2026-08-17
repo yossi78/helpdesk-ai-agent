@@ -1,0 +1,33 @@
+name: iteration_limit
+description: Stop at max_iterations before the second tool call is executed.
+
+provider:
+  type: mock_echo
+  responses:
+    - content: "Looking up the user."
+      tool_calls:
+        - name: lookup_user
+          args:
+            user_id: u-42
+    - content: "Now listing tickets."
+      tool_calls:
+        - name: list_tickets
+          args:
+            user_id: u-42
+    - content: "Would never be reached."
+
+max_iterations: 2
+
+tools:
+  - lookup_user
+  - list_tickets
+
+initial_message: "Look up user u-42 and list their tickets."
+
+evaluation:
+  must:
+    - tool: lookup_user
+  must_not:
+    - tool: list_tickets
+
+expected_verdict: pass
