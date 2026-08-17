@@ -55,6 +55,8 @@ def run_agent_loop(
             recorder.record_iteration(iteration, response, [])
             return AgentLoopResult(reason="iteration_limit", iterations=iteration)
 
+
+     ############# GET THE TOOLS   #########################
         tool_results: list[dict] = []
         for tc in response.tool_calls:
             result = tool_handler.execute(tc)

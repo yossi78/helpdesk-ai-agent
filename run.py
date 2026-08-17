@@ -35,7 +35,8 @@ def main(argv: list[str] | None = None) -> int:
         if p.exists():
             p.unlink()
 
-    scenario = load_scenario(args.scenario)
+    ############# LOAD SCENARIO FROM YAML #########################
+    scenario = load_scenario(args.scenario)   
     print(f"Loaded scenario: {scenario.name}")
 
     target = start_target(
@@ -49,6 +50,7 @@ def main(argv: list[str] | None = None) -> int:
         tool_handler = ToolHandler(scenario.tools, target_url=target.base_url)
         recorder = ThoughtProcessRecorder()
 
+     ############# RUN AGENT LOOP   #########################
         result = run_agent_loop(
             provider=provider,
             tool_handler=tool_handler,

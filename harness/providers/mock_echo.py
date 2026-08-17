@@ -19,6 +19,7 @@ class MockEchoProvider(Provider):
                 f"MockEchoProvider exhausted: scenario asked for response "
                 f"#{self._index + 1} but only {len(self._responses)} are configured"
             )
+        #####  PROVIDER (mock_echo) DECIDES WHAT TO DO #####################
         spec = self._responses[self._index]
         self._index += 1
         tool_calls = [
