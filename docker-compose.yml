@@ -1,0 +1,14 @@
+services:
+  ollama:
+    build: ./docker/ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    environment:
+      OLLAMA_HOST: 0.0.0.0:11434
+      OLLAMA_MODEL: llama3.2
+    restart: unless-stopped
+
+volumes:
+  ollama_data:

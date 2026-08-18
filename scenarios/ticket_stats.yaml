@@ -1,24 +1,26 @@
 name: ticket_stats
 description: Summarize the support ticket queue by status and priority.
 
+# Live Ollama provider (native /api/chat). Start the server first:
+#   docker compose up ollama
+# First boot pulls llama3.2 (~2GB). Then:
+#   python run.py scenarios/ticket_stats.yaml
 provider:
-  type: mock_echo
-  responses:
-    - content: "I'll pull the overall ticket queue stats first."
-      tool_calls:
-        - name: ticket_stats
-          args: {}
-    - content: "Now I'll get Alice Wong's ticket load."
-      tool_calls:
-        - name: ticket_stats
-          args:
-            user_id: u-42
-    - content: "Queue has 5 tickets (4 open, 1 closed; 2 high, 1 normal, 2 low). Alice has 2 open tickets, one high priority. Done."
+  type: ollama
+  base_url: http://127.0.0.1:11434
+  model: llama3.2
+  timeout: 120
 
 max_iterations: 10
 
 tools:
   - ticket_stats
+
+system_prompt: >
+  You are a help-desk agent. Use only the ticket_stats tool to gather numbers;
+  do not invent counts. First call ticket_stats with no arguments for the
+  whole queue. Then call ticket_stats with user_id "u-42" for Alice Wong.
+  After both results, summarize and stop.
 
 initial_message: "Give me a snapshot of the support ticket queue, then Alice Wong's (u-42) ticket load."
 

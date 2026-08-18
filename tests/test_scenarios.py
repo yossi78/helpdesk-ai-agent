@@ -9,7 +9,15 @@ from tests.conftest import iter_scenario_files, run_scenario
 from harness.scenario import load_scenario
 
 
-SCENARIO_FILES = iter_scenario_files()
+def _scripted_scenario_files() -> list[Path]:
+    return [
+        path
+        for path in iter_scenario_files()
+        if load_scenario(path).provider.get("type") == "mock_echo"
+    ]
+
+
+SCENARIO_FILES = _scripted_scenario_files()
 
 
 @pytest.mark.parametrize(
@@ -37,10 +45,23 @@ def test_happy_path_terminates_naturally_after_three_iterations(tmp_path):
     assert thought["iteration_count"] == 3
 
 
-def test_ticket_stats_invokes_tool_twice_then_stops(tmp_path):
+def test_ticket_stats_scenario_uses_ollama_provider():
     from tests.conftest import SCENARIOS_DIR
 
-    result = run_scenario(SCENARIOS_DIR / "ticket_stats.yaml", tmp_path)
+    scenario = load_scenario(SCENARIOS_DIR / "ticket_stats.yaml")
+    assert scenario.provider["type"] == "ollama"
+    assert scenario.provider["model"] == "llama3.2"
+    assert scenario.tools == ["ticket_stats"]
+
+
+def test_ticket_stats_invokes_tool_twice_then_stops(tmp_path):
+    path = (
+        Path(__file__).parent
+        / "fixtures"
+        / "scenarios"
+        / "ticket_stats_scripted.yaml"
+    )
+    result = run_scenario(path, tmp_path)
     assert result["verdict"] == "pass"
     assert result["termination_reason"] == "natural_termination"
     assert result["iterations"] == 3

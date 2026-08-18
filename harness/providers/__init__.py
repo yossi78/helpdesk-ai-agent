@@ -4,11 +4,13 @@ from typing import Any
 
 from .base import Provider, ProviderResponse, ToolCall
 from .mock_echo import MockEchoProvider
+from .ollama import OllamaProvider
 from .openai_compatible import OpenAICompatibleProvider
 
 
 _REGISTRY: dict[str, type[Provider]] = {
     "mock_echo": MockEchoProvider,
+    "ollama": OllamaProvider,
     "openai_compatible": OpenAICompatibleProvider,
 }
 
@@ -25,6 +27,7 @@ __all__ = [
     "ProviderResponse",
     "ToolCall",
     "MockEchoProvider",
+    "OllamaProvider",
     "OpenAICompatibleProvider",
     "make_provider",
 ]

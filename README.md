@@ -72,6 +72,22 @@ provider:
 
 Any OpenAI-compatible endpoint works. Not required for the assignment.
 
+`ticket_stats` uses a third provider that talks to Ollama's native `/api/chat`
+API (not the OpenAI-compatible `/v1` endpoint). Start a local server, then run
+the scenario:
+
+```bash
+docker compose up ollama
+python run.py scenarios/ticket_stats.yaml
+```
+
+```yaml
+provider:
+  type: ollama
+  base_url: http://127.0.0.1:11434
+  model: llama3.2
+```
+
 ## Submission
 
 1. Create a **private** repo from this code; make your changes there.
