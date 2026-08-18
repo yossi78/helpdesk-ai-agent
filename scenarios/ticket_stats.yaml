@@ -1,0 +1,29 @@
+name: ticket_stats
+description: Summarize the support ticket queue by status and priority.
+
+provider:
+  type: mock_echo
+  responses:
+    - content: "I'll pull the overall ticket queue stats first."
+      tool_calls:
+        - name: ticket_stats
+          args: {}
+    - content: "Now I'll get Alice Wong's ticket load."
+      tool_calls:
+        - name: ticket_stats
+          args:
+            user_id: u-42
+    - content: "Queue has 5 tickets (4 open, 1 closed; 2 high, 1 normal, 2 low). Alice has 2 open tickets, one high priority. Done."
+
+max_iterations: 10
+
+tools:
+  - ticket_stats
+
+initial_message: "Give me a snapshot of the support ticket queue, then Alice Wong's (u-42) ticket load."
+
+evaluation:
+  must:
+    - tool: ticket_stats
+
+expected_verdict: pass

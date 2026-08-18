@@ -51,6 +51,33 @@ def test_list_tickets_filtered_and_unfiltered(tmp_path):
     assert len(all_tickets.json["tickets"]) == 5
 
 
+def test_ticket_stats_overall_and_filtered(tmp_path):
+    client, _, _ = _client(tmp_path)
+    overall = client.get("/api/tickets/stats")
+    assert overall.status_code == 200
+    assert overall.json == {
+        "total": 5,
+        "by_status": {"open": 4, "closed": 1},
+        "by_priority": {"normal": 1, "high": 2, "low": 2},
+    }
+
+    alice = client.get("/api/tickets/stats", query_string={"user_id": "u-42"})
+    assert alice.status_code == 200
+    assert alice.json == {
+        "total": 2,
+        "by_status": {"open": 2},
+        "by_priority": {"normal": 1, "high": 1},
+    }
+
+    unknown = client.get("/api/tickets/stats", query_string={"user_id": "no-such-user"})
+    assert unknown.status_code == 200
+    assert unknown.json == {"total": 0, "by_status": {}, "by_priority": {}}
+
+    lines = (tmp_path / "honeypot.jsonl").read_text().strip().splitlines()
+    tools = [json.loads(line)["data"]["tool"] for line in lines]
+    assert tools.count("ticket_stats") == 3
+
+
 def test_refunds_require_user_id(tmp_path):
     client, _, _ = _client(tmp_path)
     assert client.get("/api/refunds").status_code == 400

@@ -145,6 +145,17 @@ def test_all_registered_tools_round_trip(target_server):
     all_tickets = json.loads(handler.execute(ToolCall("list_tickets", {}, "c3")))
     assert len(all_tickets["tickets"]) == 5
 
+    stats = json.loads(handler.execute(ToolCall("ticket_stats", {}, "c-stats")))
+    assert stats["total"] == 5
+    assert stats["by_status"] == {"open": 4, "closed": 1}
+    assert stats["by_priority"] == {"normal": 1, "high": 2, "low": 2}
+
+    alice_stats = json.loads(
+        handler.execute(ToolCall("ticket_stats", {"user_id": "u-42"}, "c-stats-u"))
+    )
+    assert alice_stats["total"] == 2
+    assert alice_stats["by_status"] == {"open": 2}
+
     refunds = json.loads(
         handler.execute(ToolCall("lookup_refunds", {"user_id": "u-77"}, "c4"))
     )
