@@ -177,6 +177,58 @@ def test_all_registered_tools_round_trip(target_server):
     assert deleted["deleted"] is True
 
 
+def test_ticket_stats_is_registered_with_optional_user_id():
+    spec = TOOL_REGISTRY["ticket_stats"]
+    assert spec.name == "ticket_stats"
+    assert spec.args_schema["properties"]["user_id"]["type"] == "string"
+    assert "required" not in spec.args_schema
+
+    handler = ToolHandler(["ticket_stats"], target_url="http://127.0.0.1:1")
+    advertised = handler.available_tools_for_llm()
+    assert advertised == [
+        {
+            "name": "ticket_stats",
+            "description": spec.description,
+            "parameters": spec.args_schema,
+        }
+    ]
+
+
+def test_ticket_stats_execute_overall_filtered_and_empty(target_server):
+    handler = ToolHandler(["ticket_stats"], target_url=target_server.base_url)
+
+    overall = json.loads(handler.execute(ToolCall("ticket_stats", {}, "c1")))
+    assert overall == {
+        "total": 5,
+        "by_status": {"open": 4, "closed": 1},
+        "by_priority": {"normal": 1, "high": 2, "low": 2},
+    }
+
+    alice = json.loads(
+        handler.execute(ToolCall("ticket_stats", {"user_id": "u-42"}, "c2"))
+    )
+    assert alice == {
+        "total": 2,
+        "by_status": {"open": 2},
+        "by_priority": {"normal": 1, "high": 1},
+    }
+
+    empty = json.loads(
+        handler.execute(ToolCall("ticket_stats", {"user_id": "no-such-user"}, "c3"))
+    )
+    assert empty == {"total": 0, "by_status": {}, "by_priority": {}}
+
+
+def test_ticket_stats_wraps_request_errors():
+    handler = ToolHandler(["ticket_stats"], target_url="http://127.0.0.1:1")
+    result = handler.execute(ToolCall("ticket_stats", {}, "c1"))
+    assert result.startswith("Error:")
+    summary = handler.error_summary()
+    assert len(summary) == 1
+    assert summary[0].tool == "ticket_stats"
+    assert summary[0].count == 1
+
+
 def test_fatal_error_from_tool_fn_is_not_wrapped(target_server):
     handler = ToolHandler(["lookup_user"], target_url=target_server.base_url)
 

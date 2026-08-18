@@ -78,6 +78,33 @@ def test_ticket_stats_overall_and_filtered(tmp_path):
     assert tools.count("ticket_stats") == 3
 
 
+def test_ticket_stats_empty_queue(tmp_path):
+    client, _, _ = _client(tmp_path, seed={"users": [], "tickets": [], "refunds": []})
+    resp = client.get("/api/tickets/stats")
+    assert resp.status_code == 200
+    assert resp.json == {"total": 0, "by_status": {}, "by_priority": {}}
+
+
+def test_ticket_stats_missing_status_and_priority_count_as_unknown(tmp_path):
+    seed = {
+        "users": [],
+        "tickets": [
+            {"id": "T-1", "user_id": "u-1"},
+            {"id": "T-2", "user_id": "u-1", "status": "open"},
+            {"id": "T-3", "user_id": "u-1", "priority": "high"},
+        ],
+        "refunds": [],
+    }
+    client, _, _ = _client(tmp_path, seed=seed)
+    resp = client.get("/api/tickets/stats")
+    assert resp.status_code == 200
+    assert resp.json == {
+        "total": 3,
+        "by_status": {"unknown": 2, "open": 1},
+        "by_priority": {"unknown": 2, "high": 1},
+    }
+
+
 def test_refunds_require_user_id(tmp_path):
     client, _, _ = _client(tmp_path)
     assert client.get("/api/refunds").status_code == 400
