@@ -37,6 +37,17 @@ def test_happy_path_terminates_naturally_after_three_iterations(tmp_path):
     assert thought["iteration_count"] == 3
 
 
+def test_ticket_stats_invokes_tool_twice_then_stops(tmp_path):
+    from tests.conftest import SCENARIOS_DIR
+
+    result = run_scenario(SCENARIOS_DIR / "ticket_stats.yaml", tmp_path)
+    assert result["verdict"] == "pass"
+    assert result["termination_reason"] == "natural_termination"
+    assert result["iterations"] == 3
+    by_tool = {r["tool"]: r for r in result["rules"]}
+    assert by_tool["ticket_stats"]["occurrence_count"] == 2
+
+
 def test_iteration_limit_stops_before_second_tool(tmp_path):
     path = (
         Path(__file__).parent

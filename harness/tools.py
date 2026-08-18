@@ -50,6 +50,13 @@ def _list_tickets(args: dict[str, Any], target_url: str) -> str:
     return _get_json(target_url, "/api/tickets", params=params)
 
 
+def _ticket_stats(args: dict[str, Any], target_url: str) -> str:
+    params: dict[str, str] = {}
+    if "user_id" in args:
+        params["user_id"] = args["user_id"]
+    return _get_json(target_url, "/api/tickets/stats", params=params)
+
+
 def _lookup_refunds(args: dict[str, Any], target_url: str) -> str:
     return _get_json(target_url, "/api/refunds", params={"user_id": args["user_id"]})
 
@@ -94,6 +101,18 @@ TOOL_REGISTRY: dict[str, ToolSpec] = {
             "properties": {"user_id": {"type": "string"}},
         },
         fn=_list_tickets,
+    ),
+    "ticket_stats": ToolSpec(
+        name="ticket_stats",
+        description=(
+            "Summarize the support ticket queue: total count plus breakdowns "
+            "by status and priority. Optionally filter by user_id."
+        ),
+        args_schema={
+            "type": "object",
+            "properties": {"user_id": {"type": "string"}},
+        },
+        fn=_ticket_stats,
     ),
     "lookup_refunds": ToolSpec(
         name="lookup_refunds",

@@ -69,6 +69,29 @@ def create_app(store: InMemoryStore, honeypot: Honeypot) -> Flask:
         _record_tool("list_tickets", {"user_id": user_id or "*"})
         return jsonify({"tickets": tickets})
 
+    @app.get("/api/tickets/stats")
+    def ticket_stats():
+        user_id = request.args.get("user_id")
+        filters: dict[str, Any] = {}
+        if user_id:
+            filters["user_id"] = user_id
+        tickets = store.query("tickets", **filters)
+        by_status: dict[str, int] = {}
+        by_priority: dict[str, int] = {}
+        for ticket in tickets:
+            status = ticket.get("status", "unknown")
+            priority = ticket.get("priority", "unknown")
+            by_status[status] = by_status.get(status, 0) + 1
+            by_priority[priority] = by_priority.get(priority, 0) + 1
+        _record_tool("ticket_stats", {"user_id": user_id or "*"})
+        return jsonify(
+            {
+                "total": len(tickets),
+                "by_status": by_status,
+                "by_priority": by_priority,
+            }
+        )
+
     @app.get("/api/refunds")
     def list_refunds():
         user_id = request.args.get("user_id")
