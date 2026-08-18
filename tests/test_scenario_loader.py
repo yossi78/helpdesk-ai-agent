@@ -20,6 +20,15 @@ def test_load_happy_path():
     assert scenario.source_path == (SCENARIOS_DIR / "happy_path.yaml").resolve()
 
 
+def test_load_ticket_stats_uses_ollama():
+    scenario = load_scenario(SCENARIOS_DIR / "ticket_stats.yaml")
+    assert scenario.name == "ticket_stats"
+    assert scenario.provider["type"] == "ollama"
+    assert scenario.provider["model"] == "llama3.2"
+    assert scenario.tools == ["ticket_stats"]
+    assert [r.tool for r in scenario.evaluation.must] == ["ticket_stats"]
+
+
 def test_defaults_when_optional_fields_omitted(tmp_path):
     path = tmp_path / "minimal.yaml"
     path.write_text(
