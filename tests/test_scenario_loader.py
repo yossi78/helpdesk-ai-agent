@@ -27,6 +27,7 @@ def test_load_ticket_stats_uses_ollama():
     assert scenario.provider["model"] == "llama3.2"
     assert scenario.tools == ["ticket_stats"]
     assert [r.tool for r in scenario.evaluation.must] == ["ticket_stats"]
+    assert scenario.evaluation.must[0].min_count == 2
 
 
 def test_defaults_when_optional_fields_omitted(tmp_path):

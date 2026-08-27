@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-import json
 from dataclasses import dataclass
 from pathlib import Path
 
 from harness.scenario import Scenario
+from target.honeypot import read_entries
 
 
 @dataclass
@@ -31,7 +31,7 @@ def evaluate(scenario: Scenario, honeypot_path: Path) -> Verdict:
             RuleResult(
                 rule_type="must",
                 tool=rule.tool,
-                satisfied=count > 0,
+                satisfied=count >= rule.min_count,
                 occurrence_count=count,
             )
         )
@@ -52,21 +52,11 @@ def evaluate(scenario: Scenario, honeypot_path: Path) -> Verdict:
 
 
 def _read_invoked_tools(path: Path) -> list[str]:
-    if not path.exists():
-        return []
     tools: list[str] = []
-    with path.open() as f:
-        for line in f:
-            line = line.strip()
-            if not line:
-                continue
-            try:
-                entry = json.loads(line)
-            except json.JSONDecodeError:
-                continue
-            if entry.get("category") != "tool_invoked":
-                continue
-            tool = entry.get("data", {}).get("tool")
-            if tool:
-                tools.append(tool)
+    for entry in read_entries(path):
+        if entry.get("category") != "tool_invoked":
+            continue
+        tool = entry.get("data", {}).get("tool")
+        if tool:
+            tools.append(tool)
     return tools

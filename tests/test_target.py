@@ -5,7 +5,7 @@ import json
 import pytest
 
 from target.app import SEED_DIR, create_app, load_seed_data, start_target
-from target.honeypot import Honeypot, attach_to_store
+from target.honeypot import Honeypot, attach_to_store, read_entries
 from target.store import InMemoryStore
 from tests.conftest import free_port, wait_healthy
 
@@ -39,8 +39,8 @@ def test_lookup_missing_user(tmp_path):
     client, _, honeypot = _client(tmp_path)
     resp = client.get("/api/users/missing")
     assert resp.status_code == 404
-    lines = (tmp_path / "honeypot.jsonl").read_text().strip().splitlines()
-    assert json.loads(lines[-1])["data"]["tool"] == "lookup_user"
+    entries = read_entries(tmp_path / "honeypot.jsonl")
+    assert entries[-1]["data"]["tool"] == "lookup_user"
 
 
 def test_list_tickets_filtered_and_unfiltered(tmp_path):
@@ -73,9 +73,19 @@ def test_ticket_stats_overall_and_filtered(tmp_path):
     assert unknown.status_code == 200
     assert unknown.json == {"total": 0, "by_status": {}, "by_priority": {}}
 
-    lines = (tmp_path / "honeypot.jsonl").read_text().strip().splitlines()
-    tools = [json.loads(line)["data"]["tool"] for line in lines]
+    tools = [e["data"]["tool"] for e in read_entries(tmp_path / "honeypot.jsonl")]
     assert tools.count("ticket_stats") == 3
+
+
+def test_ticket_stats_for_bob(tmp_path):
+    client, _, _ = _client(tmp_path)
+    bob = client.get("/api/tickets/stats", query_string={"user_id": "u-77"})
+    assert bob.status_code == 200
+    assert bob.json == {
+        "total": 2,
+        "by_status": {"closed": 1, "open": 1},
+        "by_priority": {"low": 2},
+    }
 
 
 def test_ticket_stats_empty_queue(tmp_path):
@@ -213,6 +223,39 @@ def test_honeypot_accepts_string_path(tmp_path):
     assert "lookup_user" in path.read_text()
 
 
+def test_honeypot_writes_indented_entries(tmp_path):
+    path = tmp_path / "h.jsonl"
+    honeypot = Honeypot(log_path=path)
+    honeypot.record("tool_invoked", {"tool": "lookup_user", "user_id": "u-42"})
+    honeypot.record("tool_invoked", {"tool": "list_tickets"})
+    text = path.read_text()
+    assert '\n  "category": "tool_invoked"' in text
+    assert [e["data"]["tool"] for e in read_entries(path)] == [
+        "lookup_user",
+        "list_tickets",
+    ]
+
+
+def test_read_entries_handles_legacy_single_line_and_garbage(tmp_path):
+    path = tmp_path / "h.jsonl"
+    path.write_text(
+        "\n".join(
+            [
+                json.dumps({"category": "tool_invoked", "data": {"tool": "one"}}),
+                "not json",
+                "",
+                json.dumps({"category": "tool_invoked", "data": {"tool": "two"}}),
+            ]
+        )
+        + "\n"
+    )
+    assert [e["data"]["tool"] for e in read_entries(path)] == ["one", "two"]
+
+
+def test_read_entries_on_missing_file(tmp_path):
+    assert read_entries(tmp_path / "nope.jsonl") == []
+
+
 def test_honeypot_swallows_write_errors(tmp_path, caplog):
     blocked = tmp_path / "not-a-dir"
     blocked.write_text("file")
@@ -227,11 +270,7 @@ def test_attach_to_store_is_idempotent_and_records_inserts(tmp_path):
     attach_to_store(honeypot, store)
     attach_to_store(honeypot, store)
     store.insert("users", {"id": "u-1"})
-    entries = [
-        json.loads(line)
-        for line in (tmp_path / "h.jsonl").read_text().splitlines()
-        if line
-    ]
+    entries = read_entries(tmp_path / "h.jsonl")
     created = [e for e in entries if e["category"] == "record_created"]
     assert len(created) == 1
     assert created[0]["data"]["item_id"] == "u-1"
@@ -243,11 +282,7 @@ def test_query_recording_when_store_is_vulnerable(tmp_path):
     attach_to_store(honeypot, store)
     store.get_by_id("users", "u-1")
     store.query("users", id="u-1")
-    categories = [
-        json.loads(line)["category"]
-        for line in (tmp_path / "h.jsonl").read_text().splitlines()
-        if line
-    ]
+    categories = [e["category"] for e in read_entries(tmp_path / "h.jsonl")]
     assert categories.count("record_queried") == 2
 
 
@@ -256,11 +291,7 @@ def test_query_recording_when_enabled(tmp_path, monkeypatch):
     client, _, _ = _client(tmp_path)
     client.get("/api/users/u-42")
     client.get("/api/tickets", query_string={"user_id": "u-42"})
-    categories = [
-        json.loads(line)["category"]
-        for line in (tmp_path / "honeypot.jsonl").read_text().splitlines()
-        if line
-    ]
+    categories = [e["category"] for e in read_entries(tmp_path / "honeypot.jsonl")]
     assert "record_queried" in categories
 
 

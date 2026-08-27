@@ -100,3 +100,40 @@ broke it on purpose, say so in NOTES.md):
 ```bash
 python run.py scenarios/happy_path.yaml
 ```
+
+# #########################################################################################
+##           HOW TO RUN THE SERVICE
+# #########################################################################################
+
+1. Install [Docker Desktop] as follow:
+https://www.docker.com/products/docker-desktop 
+
+2. Start the local Ollama server in terminal as follow:
+   docker compose up ollama
+
+
+3. Run the following command:
+   python -m target
+
+4. Open postman collection to get famniliar with apis 
+   /postman/helpdesk.json
+
+
+5. click on ctrl+c to stop the service
+
+
+6. Run all 100 unit tests I added to full coverage exist code , new tool and new LLM :
+   python -m pytest
+
+7. Run the default (regression) scenario in terminal:
+   python run.py scenarios/happy_path.yaml
+
+8. Run the scenario that uses the new tool of stats which use new LLM of Ollama :
+   python run.py scenarios/ticket_stats.yaml
+
+
+9. Open the presentation as follow:
+   /docs/presentation.html
+
+
+

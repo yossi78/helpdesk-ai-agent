@@ -10,6 +10,7 @@ import yaml
 @dataclass
 class EvaluationRule:
     tool: str
+    min_count: int = 1
 
 
 @dataclass

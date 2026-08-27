@@ -67,6 +67,21 @@ def test_ticket_stats_invokes_tool_twice_then_stops(tmp_path):
     assert result["iterations"] == 3
     by_tool = {r["tool"]: r for r in result["rules"]}
     assert by_tool["ticket_stats"]["occurrence_count"] == 2
+    assert by_tool["ticket_stats"]["satisfied"] is True
+
+
+def test_ticket_stats_once_fails_min_count(tmp_path):
+    path = (
+        Path(__file__).parent
+        / "fixtures"
+        / "scenarios"
+        / "ticket_stats_once.yaml"
+    )
+    result = run_scenario(path, tmp_path)
+    assert result["verdict"] == "fail"
+    by_tool = {r["tool"]: r for r in result["rules"]}
+    assert by_tool["ticket_stats"]["occurrence_count"] == 1
+    assert by_tool["ticket_stats"]["satisfied"] is False
 
 
 def test_iteration_limit_stops_before_second_tool(tmp_path):

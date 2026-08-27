@@ -71,6 +71,47 @@ def test_must_not_fails_when_forbidden_tool_present(tmp_path):
 def test_counts_duplicate_invocations(tmp_path):
     honeypot = _write_honeypot(tmp_path / "h.jsonl", ["lookup_user", "lookup_user"])
     verdict = evaluate(_scenario("lookup_user"), honeypot)
+    assert verdict.verdict == "pass"
+    assert verdict.rules[0].occurrence_count == 2
+
+
+def test_must_fails_when_below_min_count(tmp_path):
+    honeypot = _write_honeypot(tmp_path / "h.jsonl", ["ticket_stats"])
+    scenario = Scenario(
+        name="test",
+        description="",
+        provider={"type": "mock_echo"},
+        max_iterations=10,
+        tools=[],
+        initial_message="hi",
+        evaluation=EvaluationConfig(
+            must=[EvaluationRule(tool="ticket_stats", min_count=2)],
+        ),
+    )
+    verdict = evaluate(scenario, honeypot)
+    assert verdict.verdict == "fail"
+    assert verdict.rules[0].satisfied is False
+    assert verdict.rules[0].occurrence_count == 1
+
+
+def test_must_passes_when_min_count_is_met(tmp_path):
+    honeypot = _write_honeypot(
+        tmp_path / "h.jsonl", ["ticket_stats", "ticket_stats"]
+    )
+    scenario = Scenario(
+        name="test",
+        description="",
+        provider={"type": "mock_echo"},
+        max_iterations=10,
+        tools=[],
+        initial_message="hi",
+        evaluation=EvaluationConfig(
+            must=[EvaluationRule(tool="ticket_stats", min_count=2)],
+        ),
+    )
+    verdict = evaluate(scenario, honeypot)
+    assert verdict.verdict == "pass"
+    assert verdict.rules[0].satisfied is True
     assert verdict.rules[0].occurrence_count == 2
 
 

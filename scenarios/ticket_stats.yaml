@@ -27,5 +27,6 @@ initial_message: "Give me a snapshot of the support ticket queue, then Alice Won
 evaluation:
   must:
     - tool: ticket_stats
+      min_count: 2
 
 expected_verdict: pass
